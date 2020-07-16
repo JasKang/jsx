@@ -3,6 +3,7 @@ import { shallowMount, mount } from '@vue/test-utils';
 
 const patchFlagExpect = (wrapper, flag, dynamic) => {
   const { patchFlag, dynamicProps } = wrapper.vm.$.subTree;
+
   expect(patchFlag).toBe(flag);
   expect(dynamicProps).toEqual(dynamic);
 };
@@ -262,6 +263,51 @@ describe('Transform JSX', () => {
   });
 });
 
+describe('slots', () => {
+  test('with default', () => {
+    const A = (_, { slots }) => (
+      <div>
+        {slots.default()}
+        {slots.foo('val')}
+      </div>
+    );
+
+    A.inheritAttrs = false;
+
+    const wrapper = mount({
+      setup() {
+        const slots = {
+          foo: (val) => val,
+        };
+        return () => <A vSlots={slots}><span>default</span></A>;
+      },
+    });
+
+    expect(wrapper.html()).toBe('<div><span>default</span>val</div>');
+  });
+
+  test('without default', () => {
+    const A = (_, { slots }) => (
+      <div>
+        {slots.foo('foo')}
+      </div>
+    );
+
+    A.inheritAttrs = false;
+
+    const wrapper = mount({
+      setup() {
+        const slots = {
+          foo: (val) => val,
+        };
+        return () => <A vSlots={slots} />;
+      },
+    });
+
+    expect(wrapper.html()).toBe('<div>foo</div>');
+  });
+});
+
 describe('PatchFlags', () => {
   test('static', () => {
     const wrapper = shallowMount({
@@ -306,5 +352,46 @@ describe('PatchFlags', () => {
     await wrapper.trigger('click');
 
     expect(wrapper.classes().sort()).toEqual(['b', 'static'].sort());
+  });
+
+  test('variables outside slot', async () => {
+    const A = {
+      render() {
+        return this.$slots.default();
+      },
+    };
+
+    A.inheritAttrs = false;
+
+    const wrapper = mount({
+      data() {
+        return {
+          val: 0,
+        };
+      },
+      methods: {
+        inc() {
+          this.val += 1;
+        },
+      },
+      render() {
+        const attrs = {
+          innerHTML: this.val,
+        };
+        return (
+          <A inc={this.inc}>
+            <div>
+              <textarea id="textarea" {...attrs} />
+            </div>
+            <button id="button" onClick={this.inc}>+1</button>
+          </A>
+        );
+      },
+    });
+
+    expect(wrapper.get('#textarea').element.innerHTML).toBe('0');
+
+    await wrapper.get('#button').trigger('click');
+    expect(wrapper.get('#textarea').element.innerHTML).toBe('1');
   });
 });

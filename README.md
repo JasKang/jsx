@@ -1,5 +1,7 @@
 # Babel Plugin JSX for Vue 3.0
 
+![test](https://github.com/vueComponent/jsx/workflows/test/badge.svg)[![npm package](https://img.shields.io/npm/v/@ant-design-vue/babel-plugin-jsx.svg?style=flat-square)](https://www.npmjs.com/package/@ant-design-vue/babel-plugin-jsx)
+
 To add Vue JSX support.
 
 English | [简体中文](./README-zh_CN.md)
@@ -10,8 +12,6 @@ Install the plugin with:
 
 ```
 npm install @ant-design-vue/babel-plugin-jsx -D
-
-npm install @ant-design-vue/babel-helper-vue-transform-on
 ```
 
 Then add the plugin to .babelrc:
@@ -118,22 +118,30 @@ const App = {
 
 v-model
 
-* You should use underscore (`_`) instead of dot (`.`) for modifiers (`vModel_trim={this.test}`)
+> Note: You should pass the second param as string for using `arg`.
 
 ```jsx
-export default {
-  data: () => ({
-    test: 'Hello World',
-  }),
-  render() {
-    return (
-      <>
-        <input type="text" vModel_trim={this.test} />
-        {this.test}
-      </>
-    )
+<input vModel={val} />
+```
+
+```jsx
+<input vModel={[val, ['trim']]} />
+```
+
+```jsx
+<A vModel={[val, 'foo', ['bar']]} />
+```
+
+Will compile to:
+
+```js
+h(A, {
+  'foo': val,
+  "fooModifiers": {
+    "bar": true
   },
-}
+  "onUpdate:foo": $event => val = $event
+})
 ```
 
 custom directive
@@ -144,11 +152,7 @@ const App = {
   setup() {
     return () => (
       <a
-        vCustom={{
-          value: 123,
-          modifiers: { modifier: true },
-          arg: 'arg',
-        }}
+        vCustom={[val, 'arg', ['a', 'b']]}
       />
     );
   },
@@ -157,8 +161,47 @@ const App = {
 
 ### Slot 
 
-Why Not props ?
+```jsx
+const App = {
+  setup() {
+    const slots = {
+      a: () => <div>A</div>,
+      b: () => <span>B</span>
+    }
+    return () => <A vSlots={slots} />
+  }
+}
+```
 
+## Who is using
+
+<table>
+  <tbody>
+    <tr>
+      <td align="center">
+        <a target="_blank" href="https://www.antdv.com/">
+          <img
+            width="32"
+            src="https://qn.antdv.com/logo.png"
+          />
+          <br>
+          <strong>Ant Design Vue</strong>
+        </a>
+      </td>
+      <td align="center">
+        <a target="_blank" href="https://youzan.github.io/vant/#/zh-CN/">
+          <img
+            width="32"
+            style="vertical-align: -0.32em; margin-right: 8px;"
+            src="https://img.yzcdn.cn/vant/logo.png"
+          />
+          <br>
+          <strong>Vant</strong>
+        </a>
+      </td>
+    </tr>
+  </tbody>
+</table>
 
 ## Compatibility
 

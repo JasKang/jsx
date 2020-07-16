@@ -1,5 +1,7 @@
 # Vue 3 Babel JSX 插件
 
+![test](https://github.com/vueComponent/jsx/workflows/test/badge.svg)[![npm package](https://img.shields.io/npm/v/@ant-design-vue/babel-plugin-jsx.svg?style=flat-square)](https://www.npmjs.com/package/@ant-design-vue/babel-plugin-jsx)
+
 以 JSX 的方式来编写 Vue 代码
 
 ## 安装
@@ -8,8 +10,6 @@
 
 ```
 npm install @ant-design-vue/babel-plugin-jsx -D
-
-npm install @ant-design-vue/babel-helper-vue-transform-on
 ```
 
 配置 Babel 
@@ -117,22 +117,30 @@ const App = {
 
 v-model
 
-* 修饰符：使用 (`_`) 代替 (`.`) (`vModel_trim={this.test}`)
+> 注意：如果想要使用 `arg`, 第二个参数需要为字符串
 
 ```jsx
-export default {
-  data: () => ({
-    test: 'Hello World',
-  }),
-  render() {
-    return (
-      <>
-        <input type="text" vModel_trim={this.test} />
-        {this.test}
-      </>
-    )
+<input vModel={val} />
+```
+
+```jsx
+<input vModel={[val, ['trim']]} />
+```
+
+```jsx
+<A vModel={[val, 'foo', ['bar']]} />
+```
+
+会变编译成：
+
+```js
+h(A, {
+  'foo': val,
+  "fooModifiers": {
+    "bar": true
   },
-}
+  "onUpdate:foo": $event => val = $event
+})
 ```
 
 自定义指令
@@ -143,11 +151,7 @@ const App = {
   setup() {
     return () => (
       <a
-        vCustom={{
-          value: 123,
-          modifiers: { modifier: true },
-          arg: 'arg',
-        }}
+        vCustom={[val, 'arg', ['a', 'b']]}
       />
     );
   },
@@ -156,7 +160,47 @@ const App = {
 
 ### 插槽 
 
-目前功能没有想好怎么实现，欢迎在 issue 中讨论，可以先使用 `props` 来代替
+```jsx
+const App = {
+  setup() {
+    const slots = {
+      a: () => <div>A</div>,
+      b: () => <span>B</span>
+    }
+    return () => <A vSlots={slots} />
+  }
+}
+```
+
+## 谁在用
+
+<table>
+  <tbody>
+    <tr>
+      <td align="center">
+        <a target="_blank" href="https://www.antdv.com/">
+          <img
+            width="32"
+            src="https://qn.antdv.com/logo.png"
+          />
+          <br>
+          <strong>Ant Design Vue</strong>
+        </a>
+      </td>
+      <td align="center">
+        <a target="_blank" href="https://youzan.github.io/vant/#/zh-CN/">
+          <img
+            width="32"
+            style="vertical-align: -0.32em; margin-right: 8px;"
+            src="https://img.yzcdn.cn/vant/logo.png"
+          />
+          <br>
+          <strong>Vant</strong>
+        </a>
+      </td>
+    </tr>
+  </tbody>
+</table>
 
 ## 兼容性
 
